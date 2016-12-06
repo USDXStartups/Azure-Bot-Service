@@ -50,6 +50,17 @@ var awsToAzure = {
     "simple notification service": "[Notification Hubs](https://azure.microsoft.com/en-us/services/notification-hubs/)"
 }
 
+var stacks = {
+    "node": "[Node Developer Center](https://azure.microsoft.com/en-us/develop/nodejs/)",
+    "node . js": "[Node Developer Center](https://azure.microsoft.com/en-us/develop/nodejs/)",
+    "ruby": "[Ruby Developer Center](https://azure.microsoft.com/en-us/develop/ruby/)",
+    "ruby on rails": "[Ruby Developer Center](https://azure.microsoft.com/en-us/develop/ruby/)",
+    "rails": "[Ruby Developer Center](https://azure.microsoft.com/en-us/develop/ruby/)",
+    "python": "[Python Developer Center](https://azure.microsoft.com/en-us/develop/python/)",
+    "php": "[PHP Developer Center](https://azure.microsoft.com/en-us/develop/php/)",
+    "docker": "[Azure Container Service](https://azure.microsoft.com/en-us/services/container-service/)"
+}
+
 // Main dialog with LUIS
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 var intents = new builder.IntentDialog({ recognizers: [recognizer] })
@@ -84,6 +95,7 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
     }
 ])
 
+
 // Get Azure Region Info Intent
 .matches('GetRegions', [
     function (session, args, next) {
@@ -112,6 +124,27 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 .matches('GetManagementInfo', [
     function (session, args, next) {
         session.send("You can create and manage your Azure services programmatically or through the [Azure Portal](portal.azure.com). If you're a Mac user, install the [Azure CLI](https://docs.microsoft.com/en-us/azure/xplat-cli-install), and for Windows, leverage [Azure Powershell commandlets](https://docs.microsoft.com/en-us/powershell/azureps-cmdlets-docs/).  Or if you want, call the REST APIs directly: [Azure REST SDK reference](https://docs.microsoft.com/en-us/rest/api/).  And finally, [Azure Resource Manager](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-overview)...use this when you want a template-based deployment for all the things.  There's a bunch of [Quickstart templates](https://github.com/Azure/azure-quickstart-templates) already on GitHub that you can start with.");
+    }
+])
+
+.matches('GetStackInfo', [
+    function (session, args, next) {
+        //TODO: Add stack-specific logic.
+        var stack = builder.EntityRecognizer.findEntity(args.entities, 'LanguagesFrameworks');
+        var sdkUrl = "[SDKs and Tools](https://docs.microsoft.com/en-us/azure/#pivot=sdkstools)";
+        var result = "";
+        if (stack) {
+            var entity = stack.entity;
+            if (!(entity in stacks)) {
+                result = "We support lots of languages and frameworks. Take a look at our " + sdkUrl + " to get started."
+            } else {
+                result = "Yep, you can run " + entity + " on Azure. Check out our " + stacks[entity] + ". The " + sdkURL + " page is pretty helpful too."
+            }
+        } else {
+            result = "We support lots of languages and frameworks. Take a look at our " + sdkUrl + " to get started."
+        }
+        session.send(result);
+        session.send("");
     }
 ])
 
