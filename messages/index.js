@@ -138,13 +138,12 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
             if (!(entity in stacks)) {
                 result = "We support lots of languages and frameworks. Take a look at our " + sdkUrl + " to get started."
             } else {
-                result = "Yep, you can run " + entity + " on Azure. Check out our " + stacks[entity] + ". The " + sdkURL + " page is pretty helpful too."
+                result = "Yep, you can run " + entity + " on Azure. Check out our " + stacks[entity] + ". The " + sdkUrl + " page is pretty helpful too."
             }
         } else {
             result = "We support lots of languages and frameworks. Take a look at our " + sdkUrl + " to get started."
         }
         session.send(result);
-        session.send("");
     }
 ])
 
