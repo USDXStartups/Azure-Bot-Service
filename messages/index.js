@@ -63,10 +63,7 @@ var stacks = {
 
 // Main dialog with LUIS
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
-var qnaRecognizer = new cognitiveservices.QnAMakerRecognizer({
-	knowledgeBaseId: process.env.KNOWLEDGEBASE_ID, 
-	subscriptionKey: process.env.QNA_KEY});
-var intents = new builder.IntentDialog({ recognizers: [qnaRecognizer] })
+var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 
 // Create VM intent
 .matches('CreateVM', [
