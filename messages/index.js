@@ -63,7 +63,10 @@ var stacks = {
 
 // Main dialog with LUIS
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
-var intents = new builder.IntentDialog({ recognizers: [recognizer] })
+var qnaRecognizer = new cognitiveservices.QnAMakerRecognizer({
+	knowledgeBaseId: process.env.KNOWLEDGEBASE_ID, 
+	subscriptionKey: process.env.QNA_KEY});
+var intents = new builder.IntentDialog({ recognizers: [recognizer, qnaRecognizer] })
 
 // Create VM intent
 .matches('CreateVM', [
@@ -100,6 +103,12 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 .matches('GetRegions', [
     function (session, args, next) {
         //TODO: Add location-specific logic.
+        var country = builder.EntityRecognizer.findEntity(args.entities, 'builtin.geography.city');
+        if(country) {
+            
+        }
+        var city = builder.EntityRecognizer.findEntity(args.entities, 'builtin.geography.city');
+        
         session.send("Azure currently has datacenters in the following locations:\n* Virginia\n* Iowa\n* Illinois\n* Texas\n* California\n* Quebec City\n* Toronto\n* Sao Paulo State\n* Ireland\n* Netherlands\n* Frankfurt\n* Magdeburg\n* Cardiff\n* Singapore\n* Hong Kong\n* New South Wales\n*  Victoria\n* Pune\n* Mumbai\n* Chennai\n* Tokyo\n* Osaka\n* Shanghai\n* Beijing\n* Seoul.\n For more info, see [Azure Regions](https://azure.microsoft.com/en-us/regions/)");
     }
 ])
@@ -129,7 +138,6 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 
 .matches('GetStackInfo', [
     function (session, args, next) {
-        //TODO: Add stack-specific logic.
         var stack = builder.EntityRecognizer.findEntity(args.entities, 'LanguagesFrameworks');
         var sdkUrl = "[SDKs and Tools](https://docs.microsoft.com/en-us/azure/#pivot=sdkstools)";
         var result = "";
