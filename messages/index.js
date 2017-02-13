@@ -1,6 +1,8 @@
 "use strict";
+require('dotenv').config();
 var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
+var cognitiveServices = require('botbuilder-cognitiveservices');
 
 var useEmulator = (process.env.NODE_ENV == 'development');
 
@@ -16,9 +18,9 @@ var bot = new builder.UniversalBot(connector);
 // Make sure you add code to validate these fields
 var luisAppId = process.env.LuisAppId;
 var luisAPIKey = process.env.LuisAPIKey;
-var luisAPIHostName = process.env.LuisAPIHostName || 'api.projectoxford.ai';
+var luisAPIHostName = process.env.LuisAPIHostName || 'westus.api.cognitive.microsoft.com';
 
-const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v1/application?id=' + luisAppId + '&subscription-key=' + luisAPIKey;
+const LuisModelUrl = 'https://' + luisAPIHostName + '/luis/v2.0/apps/' + luisAppId + '?subscription-key=' + luisAPIKey;
 
 // CREATE LOOKUP TABLES
 // AWS lookup table
@@ -63,6 +65,16 @@ var stacks = {
 
 // Main dialog with LUIS
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
+
+var qna_recognizer = new cognitiveServices.QnAMakerRecognizer({
+	knowledgeBaseId: process.env.KNOWLEDGEBASE_ID, 
+	subscriptionKey: process.env.QNA_KEY});
+
+var BasicQnAMakerDialog = new cognitiveServices.QnAMakerDialog({ 
+	recognizers: [qna_recognizer],
+	defaultMessage: 'Sorry, I did not understand your query.',
+	qnaThreshold: 0.5});
+
 var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 
 // Create VM intent
@@ -180,15 +192,18 @@ var intents = new builder.IntentDialog({ recognizers: [recognizer] })
 
 // None intent
 .matches('None', (session, args) => {
-    session.send('Hi! This is the None intent handler. You said: \'%s\'.', session.message.text);
+    //session.send('Hi! This is the None intent handler. You said: \'%s\'.', session.message.text);
+    session.beginDialog('/qna').endDialog();
 })
 
 // Default intent
 .onDefault((session) => {
-    session.send('Sorry, I did not understand \'%s\'.', session.message.text);
+    //session.send('Sorry, I did not understand \'%s\'.', session.message.text);
+    session.beginDialog('/qna');
 });
 
-bot.dialog('/', intents);    
+bot.dialog('/', intents);  
+bot.dialog('/qna', BasicQnAMakerDialog);
 
 if (useEmulator) {
     var restify = require('restify');
